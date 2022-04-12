@@ -10,7 +10,7 @@ The code in this lab is adapted from a Jupyter notebook created by [Xavier Snelg
 
 **Your assignment** is as follows:
 
-1. Open a colab window on your browser.  As usual, we'll first load the tools we need:
+1. Open a colab window on your browser.  As usual, we'll first load the tools we need (which do not include the `datascience` library this week):
 ```
 %matplotlib inline
 import numpy as np
@@ -23,74 +23,84 @@ path_data = 'http://personal.psu.edu/drh20/200DS/assets/data'
 from urllib.request import urlopen
 ```
 
-2. As in Section 17.4.3, read the dataset from the `wine.csv` file as a `Table` object and give it the name `wine`.  Do NOT convert this dataset to a new one with only two classes of wine.  We will keep all three classes for this assignment.
-
-3. As you will see from the [naive Bayes classifier document](https://github.com/DS200-SP2022-Hunter/Week12-Apr05/blob/main/NaiveBayes.pdf), you'll need the means and standard deviations of the quantitative variables for each wine class.  You can get them using the `group` method, which allows for an optional function to be used on the values in each group:
+2. The data consist of 70,000 total images, each one labeled as a digit 0 through 9.  The images are divided into a training set of 60,000 and a test set of 10,000.  Each image is a 28x28 array of integers ranging from 0 to 255, where 0 is black, 255 is white, and values in between are shades of gray. The data are already part of `keras.datasets` so we can just load them:
 ```
-wineMeans = wine.group("Class", np.mean)
-wineSDs = wine.group("Class", np.std)
+(X_train, y_train), (X_test, y_test) = mnist.load_data()
 ```
 
-4. You'll also notice from the [naive Bayes classifier document](https://github.com/DS200-SP2022-Hunter/Week12-Apr05/blob/main/NaiveBayes.pdf) that you'll need prior probabilities of the three wine categories.  For this purpose, instead of assuming that each class is equally probable a priori, let us suppose that our sample of wines is representative of the population we care about, so that the prior probabilities may be taken to be the overall proportions of the three classes.  We can calculate these proportions by using the `group` method to count how many are in each class:
+3.  The code above created some new `numpy` array objects.  We can use [`numpy.shape`](https://numpy.org/doc/stable/reference/generated/numpy.shape.html) to find the dimensions of these arrays:
 ```
-prior = wine.group("Class").column('count') / wine.num_rows
-prior
+print("X_train original shape", X_train.shape)
+print("y_train original shape", y_train.shape)
+print("X_test original shape", X_test.shape)
+print("y_test original shape", y_test.shape)
+```
+Notice that the `X` objects are 3-dimensional arrays.  For instance, the `X` training data consist of 60K images, each one 28x28.
+
+4. This code can be used to create a 3x3 array of 9 training set images selected at random. Make sure you understand how it works.
+```
+plt.rcParams['figure.figsize'] = (10,10) # You can experiment with changing these size settings
+
+for i in range(9):
+    plt.subplot(3, 3, i+1) # Produce a 3x3 array of plots, one at a time
+    j = np.random.choice(y_train.size) # Choose a training image at random
+    plt.imshow(X_train[j], cmap='gray', interpolation='none')
+    plt.title("Class {}".format(y_train[j]))
+```
+5. We're going to use the training data to train a neural network, which is basically a very complicated regression model. Our neural network is going to take a single vector for each training example, so we need to reshape the input so that each 28x28 image becomes a single 784-dimensional vector. We'll also scale the inputs to be real numbers in the range [0, 1] rather than integers in the range [0, 255]:
+```
+X_train = X_train.reshape(60000, 784)
+X_test = X_test.reshape(10000, 784)
+X_train = X_train / 255.0
+X_test = X_test / 255.0
+print("Training array shape", X_train.shape)
+print("Testing array shape", X_test.shape)
 ```
 
-5. To calculate conditional probabilities of the form P(X | C=1) will require the formula for the normal curve with mean and SD given by corresponding values from the `wineMeans` and `wineSDs` objects.  The function that evaluates the normal curve is `norm.pdf` from the `scipy.stats` library.  Verify that the following code returns the value of the normal curve evaluated at 2 when the mean is 2 and the SD is 1, which should equal the square root of (1/2&pi;):
+6. The labels `y` for both the training and test sets are numbers from 0 to 9.  These will need to be converted into the format needed by the neural net software, namely, the so-called "one-hot" or "dummy variable" form.  Study how the code below converts the values in `[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]` to this format:
 ```
-from scipy import stats
-stats.norm.pdf(2, 2, 1)
-```
+my_range = np.arange(10)
+num_categories = 10
 
-6.  We can now begin to collect the pieces.  Suppose we'd like to focus on the wine in row r.  Here is a function that takes r and the name of a variable, then returns the three probabilities P(X | C=1), P(X | C=2), and P(X | C=3), where X is the value of the selected variable in the selected row:
+np_utils.to_categorical(my_range, num_categories)
 ```
-def prob(r, variable):
-  means = wineMeans.column(variable + ' mean') # This is an array with 3 elements
-  SDs = wineSDs.column(variable + ' std') # This is an array with 3 elements
-  X = wine.column(variable).item(r) # This is a single value
-  return stats.norm.pdf(X, means, SDs) # This is an array with 3 elements
-```
- 
-7.  Let us now focus on the variables `Ash` and `Alcohol`.  Suppose we want to predict the class of the wine in row 0.  We need to combine the three probabilities found by the `prob` function we just defined (three for each of `Ash` and `Alcohol`) together with the prior probabilities to obtain the three terms in the denominator of Bayes' Theorem in the [naive Bayes classifier document](https://github.com/DS200-SP2022-Hunter/Week12-Apr05/blob/main/NaiveBayes.pdf):
-```
-prob(0, 'Ash') * prob(0, 'Alcohol') * prior
-```
-According to Bayes' theorem, the probabilities of the three classes are determined by our naive Bayes classifier by dividing each of the three values above by their sum:
-```
-bayes = prob(0, 'Ash') * prob(0, 'Alcohol') * prior
-bayes / np.sum(bayes)
-```
-Which class has the greatest probability according to our classifier?  Does this agree with the true class according to the 0th row of the `wine` table?
+Based on what you observe, describe how the one-hot format works.
 
-8. The `numpy` function called `argmax` returns the index (0, 1, or 2) of the maximum value of a 3-item array.  If we add 1 to this index, we now have our classifier.  For instance, let's classify the wine in row 10:
+7. Now convert the `y` labels to one-hot format:
+```
+Y_train = np_utils.to_categorical(y_train, num_categories)
+Y_test = np_utils.to_categorical(y_test, num_categories)
+```
+8. Now it's time to build the neural network.  Our network will have three layers, though discussion of the details is way beyond the scope of this lab. As we said above, we're basically setting up a very complicated regression model.  The code below is copied directly from [Xavier Snelgrove's tutorial](https://github.com/wxs/keras-mnist-tutorial):
+```
+model = Sequential()
+model.add(Dense(512, input_shape=(784,)))
+model.add(Activation('relu')) # An "activation" is just a non-linear function applied to the output
+                              # of the layer above. Here, with a "rectified linear unit",
+                              # we clamp all values below 0 to 0.
+                           
+model.add(Dropout(0.2))   # Dropout helps protect the model from memorizing or "overfitting" the training data
+model.add(Dense(512))
+model.add(Activation('relu'))
+model.add(Dropout(0.2))
+model.add(Dense(10))
+model.add(Activation('softmax')) # This special "softmax" activation among other things,
+                                 # ensures the output is a valid probaility distribution, that is
+                                 # that its values are all non-negative and sum to 1.
+```
+9. Loss function and optimizer:
+```
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
+```
+10. The `numpy` function called `argmax` returns the index (0, 1, or 2) of the maximum value of a 3-item array.  If we add 1 to this index, we now have our classifier.  For instance, let's classify the wine in row 10:
 ```
 bayes = prob(10, 'Ash') * prob(10, 'Alcohol') * prior
 1 + np.argmax(bayes / np.sum(bayes))
 
 # Strictly speaking, we could have just used 1 + np.argmax(bayes).  But dividing by the sum makes the connection with Bayes' Theorem more obvious.
 ```
-9.  We can now apply this naive Bayes classifier to each row in the `wine` table using a `for` loop.  **Caution!** This is dangerous because we are using the same dataset (the `wine` table) to train the classifier as we are now using to test it.  Ordinarily we should, for example, split the dataset into multiple parts, and use only one part for testing at a time while using the others for training; this procedure is called cross-validation.  In the extreme, we can test each row after training the classifier on all the other rows; this is called leave-one-out cross-validation.  However, for the sake of simplicity on this assignment we will use the whole dataset for training AND for testing.  Here is a for loop that puts all of the previous steps together:
-```
-predictions = make_array() # Start with an empty array
 
-# Now repeat our earlier procedure on each row
-for r in np.arange(wine.num_rows): 
-  bayes = prob(r, 'Ash') * prob(r, 'Alcohol') * prior
-  predictions = np.append(predictions, 1 + np.argmax(bayes / np.sum(bayes)))
-
-# Finally, create a new table that adds a column for predicted class values
-results = wine.with_columns('Predicted Class', predictions)
-```
-
-10. We can determine how many times each of the possible actual class / predicted class pairs occurred using the `pivot` method.  Using this information, calculate what percent of the predictions our naive Bayes classifier, based on `Ash` and `Alcohol`, got correct:
-```
-results.pivot('Class', 'Predicted Class')
-```
-
-
-
-12.  Finally, make sure that your Jupyter notebook only includes code and text that is relevant to this assignment.  For instance, if you have been completing this assignment by editing the original code from Section 13.2, make sure to delete the material that isn't relevant before turning in your work.
+11.  Finally, make sure that your Jupyter notebook only includes code and text that is relevant to this assignment.  For instance, if you have been completing this assignment by editing the original code from Section 13.2, make sure to delete the material that isn't relevant before turning in your work.
 
 When you've completed this, you should select "Print" from the File menu, then save to pdf using this option.  The pdf file that you create in this way is the file that you should upload to Canvas for grading.  If you have trouble with this step, try selecting the "A3" paper size from the advanced options and making sure that your colab is zoomed out all the way (using ctrl-minus or command-minus).  As an alternative, you can create the pdf within your google drive space and then download it from there.  Here's a [Jupyter noteboook](https://github.com/DS200-SP2022-Hunter/Week11-Mar29/blob/main/convert_pdf.ipynb) shared by Xinyu Dou that creates the pdf within the google drive space (you may need to modify it depending on your directory names and the name of your lab file).
 
