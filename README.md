@@ -142,7 +142,7 @@ Y_Darius = np_utils.to_categorical(y_Darius, num_categories)
 ```
 15. By adapting code from Step 4, plot some of the digits that Giovanni and Darius produced. Do you notice anything different about them, relative to the MNIST digits?
 
-16. Find the accuracy of the MNIST-trained neural net on both the Giovanni and the Darius datasets by adapting the code from Steps 11 and 12.  Do these two test sets perform as well as the MNIST test set?  
+16. Find the accuracy of the MNIST-trained neural net on both the Giovanni and the Darius datasets by adapting the code from Steps 11 and 12.  Do these two test sets perform as well as the MNIST test set?  Plot the first nine correctly classified and incorrectly classified images, for either the Giovanni or the Darius dataset, as in Step 13.
 
 17. Train a new network on the Giovanni dataset and test it on the Darius dataset.  How does this network perform in terms of prediction accuracy?  Do you have any impressions about how well these neural networks perform at recognizing digits based on what you saw in Steps 15 through 17?
 
