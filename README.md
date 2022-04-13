@@ -19,7 +19,7 @@ from keras.datasets import mnist
 from keras.utils import np_utils
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Activation, Dropout
-path_data = 'http://personal.psu.edu/drh20/200DS/assets/data'
+path_data = 'http://personal.psu.edu/drh20/200DS/assets/data/'
 from urllib.request import urlopen
 ```
 
@@ -117,13 +117,13 @@ plt.figure()
 for i, correct in enumerate(correct_indices[:9]):
     plt.subplot(3,3,i+1)
     plt.imshow(X_test[correct].reshape(28,28), cmap='gray', interpolation='none')
-    plt.title("Predicted {}, Class {}".format(predicted_classes[correct], y_test[correct]))
+    plt.title("Predicted {}, Class {}".format(predicted_digits[correct], y_test[correct]))
     
 plt.figure()
 for i, incorrect in enumerate(incorrect_indices[:9]):
     plt.subplot(3,3,i+1)
     plt.imshow(X_test[incorrect].reshape(28,28), cmap='gray', interpolation='none')
-    plt.title("Predicted {}, Class {}".format(predicted_classes[incorrect], y_test[incorrect]))
+    plt.title("Predicted {}, Class {}".format(predicted_digits[incorrect], y_test[incorrect]))
 ```
 14. In the summer of 2019, an undergraduate named Giovanni Smith spent eight weeks at Penn State as a research assistant working on the digit recognition problem.  During this time, he created two new datasets:  One in which he wrote digits himself, and one in which his friend Darius wrote digits.  Each of them produced a total of 240 digits, 24 of each digit from 0 to 9.  Let's read in the datasets and get them in the correct format:
 ```
