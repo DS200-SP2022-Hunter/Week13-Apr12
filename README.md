@@ -71,7 +71,7 @@ Based on what you observe, describe how the one-hot format works.
 Y_train = np_utils.to_categorical(y_train, num_categories)
 Y_test = np_utils.to_categorical(y_test, num_categories)
 ```
-8. Now it's time to build the neural network.  Our network will have three layers, though discussion of the details is way beyond the scope of this lab. As we said above, we're basically setting up a very complicated regression model.  The code below is copied directly from [Xavier Snelgrove's tutorial](https://github.com/wxs/keras-mnist-tutorial):
+8. Now it's time to build the neural network.  Our network will have three layers, though discussion of the details is way beyond the scope of this lab. As stated above, we're basically setting up a very complicated regression model.  The code below is copied directly from [Xavier Snelgrove's tutorial](https://github.com/wxs/keras-mnist-tutorial):
 ```
 model = Sequential()
 model.add(Dense(512, input_shape=(784,)))
