@@ -141,6 +141,7 @@ Y_Giovanni = np_utils.to_categorical(y_Giovanni, num_categories)
 Y_Darius = np_utils.to_categorical(y_Darius, num_categories)
 ```
 15. By adapting code from Step 4, plot some of the digits that Giovanni and Darius produced. Do you notice anything different about them, relative to the MNIST digits?
+To successfully use the code from Step 4, you will need to insert `reshape(28,28)` because both `X_Darius` and `X_Giovanni` must be changed from 1-dimensional arrays of length 784 to 2-dimensional 28x28 arrays.  Check the code in Step 13 to see where `insert(28,28)` should be inserted.
 
 16. Find the accuracy of the MNIST-trained neural net on both the Giovanni and the Darius datasets by adapting the code from Steps 11 and 12.  Do these two test sets perform as well as the MNIST test set?  Plot the first nine correctly classified and incorrectly classified images, for either the Giovanni or the Darius dataset, as in Step 13.
 
